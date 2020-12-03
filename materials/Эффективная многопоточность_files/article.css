@@ -1,0 +1,224 @@
+BODY                    
+{ 
+    font-family: Verdana, Geneva, sans-serif;
+    font-size:75%;
+    color:#000000;   
+    background-color:#FFFFFF;            
+    text-align:justify;
+    padding:15px;
+}
+
+table
+{
+    font-size:1em;
+}
+
+P, UL, OL, DL
+{
+    font-family: Verdana, Geneva, sans-serif;
+    text-align:justify;
+}
+   
+H1 
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:2em;            
+    font-weight:bolder;
+    text-align:center;
+    color:#4580A0;
+}
+     
+H1 SPAN.subtitle    
+{ 
+    font-family: Verdana, Geneva, sans-serif;
+    font-size:1.8em;            
+    font-weight:lighter;
+}                
+         
+H2   
+{ 
+    font-family: Verdana, Geneva, sans-serif;
+    font-size:1.8em;            
+    font-weight:lighter;
+    font-variant:small-caps;
+    text-align:left;
+    color:#4580A0;
+}
+        
+H3 
+{   
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size:1.35em;            
+    font-weight:bold;            
+    text-align:left;
+    color:#4580A0;
+}
+       
+H4
+{
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size:1em;            
+    margin-left:0.1em;
+    font-weight:bold;            
+    text-align:left;
+    color:#4580A0;
+}
+                      
+H5 
+{
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size:1em;                                    
+    text-align:right;  
+    font-weight:bold;
+}
+           
+H5 .title 
+{
+    color:#3570A0;
+}            
+         
+H5 .value
+{ 
+    font-family: Verdana, Geneva, sans-serif;
+    font-style:italic;           
+    color:#000000;
+}            
+   
+H6
+{ 
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size:1em;                                    
+    text-align:right;          
+    font-weight:lighter;
+}
+
+H6 .title    
+{
+    color:#3570A0;
+}          
+
+H6 .value     
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-style:italic;           
+    color:#000000;
+}            
+       
+TABLE
+{ 
+    margin:5px;
+}
+
+TD.contents
+{ 
+    font-family: Verdana, Geneva, sans-serif;
+    background-color:#FFFFFF; 
+}       
+
+TD 
+{
+    font-family: Verdana, Geneva, sans-serif;
+    background-color:#F4F4F4; 
+}       
+
+TH 
+{
+    font-family: Verdana, Geneva, sans-serif;
+    background-color:#D4D4D4; 
+}       
+       
+PRE, CODE 
+{
+    padding:10px;
+    margin:0;
+    font-family: "Courier New", Courier, monospace;
+}                   
+       
+.code    
+{
+    background-color:#F4F4F4;
+}         
+         
+.warning, .warning TD
+{
+    background-color:#FFE4E4;            
+    color:#FF5555;
+    padding:0.5em;
+    font-family:Verdana, Geneva, sans-serif;
+    text-align:justify;
+}
+         
+.note, .note TD
+{
+    background-color:#F5F9FF;            
+    color:#506580;                  
+    padding:0.8em;    
+    font-family: Verdana, Geneva, sans-serif;
+    text-align:justify;
+}
+      
+.tip, .tip TD    
+{
+    background-color:#F5FFF5;
+    color:#759545;     
+    padding:0.8em;    
+    font-family: Verdana, Geneva, sans-serif;
+    text-align:justify;
+}
+
+.title 
+{
+    font-family: Tahoma, Geneva, sans-serif;
+} 
+.warning P, 
+.warning PRE,
+.note P, 
+.note PRE,
+.tip P, 
+.tip PRE
+  { margin:0.3em 0em 0.1em 0em; }
+
+.warning .code { background-color:#FFE4E4;}
+.note .code { background-color:#F5F9FF;}
+.tip .code { background-color:#F5FFF5;}
+                          
+P I   
+{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+A 
+{
+    text-decoration: none;
+    font-family: Tahoma, Geneva, sans-serif;
+    color: #6677AA;
+} 
+A:hover 
+{ 
+  text-decoration: underline;
+  color: #8899CC;    
+}
+A.link-ext
+{
+	padding-left: 17px;
+	background: transparent url('../Images/extA.gif') no-repeat left;
+}
+A.link-file
+{
+	padding-left: 28px;
+	background: transparent url('../Images/fileA.gif') no-repeat left;
+}
+A.link-chm
+{
+	padding-left: 18px;
+	background: transparent url('../Images/chmA.gif') no-repeat left;
+}
+                                
+SPAN.COMMENT            { color: #008800; }
+SPAN.STRING             { color: #007777; }
+SPAN.CHARACTER          { color: black; }
+SPAN.KEYWORD            { color: blue; }
+SPAN.PREPROCESSOR       { color: blue; }
+SPAN.NUMBER             { color: black; }
+SPAN.ACCENT             { color: red; }

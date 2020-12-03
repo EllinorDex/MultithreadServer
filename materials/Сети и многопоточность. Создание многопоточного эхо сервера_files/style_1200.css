@@ -1,0 +1,10 @@
+@media (min-width: 1200px) {
+	.info_block p:after
+	{
+		content: '<1200';
+	}
+
+
+
+
+}

@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1251">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Сети и многопоточность. Создание многопоточного эхо сервера</title>
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/bootstrap.css" rel="stylesheet">
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/style.css" rel="stylesheet">
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/style_1200.css" rel="stylesheet">
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/style_992.css" rel="stylesheet">
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/style_768.css" rel="stylesheet">
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/style_480.css" rel="stylesheet">
+	<link href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/jquery-ui.css" rel="stylesheet">
+	<link href="https://otherreferats.allbest.ru/favicon.ico" rel="shortcut icon">
+	<script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/osd.js"></script><script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/cookie.js"></script><script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/show_ads_impl_fy2019.js" id="google_shimpl"></script><script type="text/javascript" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/context.js" async=""></script><script async="" type="text/javascript" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/gpt.js"></script><script type="text/javascript">
+	  var googletag = googletag || {};
+	  googletag.cmd = googletag.cmd || [];
+	  (function() {
+	    var gads = document.createElement('script');
+	    gads.async = true;
+	    gads.type = 'text/javascript';
+	    var useSSL = 'https:' == document.location.protocol;
+	    gads.src = (useSSL ? 'https:' : 'http:') +
+	      '//www.googletagservices.com/tag/js/gpt.js';
+	    var node = document.getElementsByTagName('script')[0];
+	    node.parentNode.insertBefore(gads, node);
+	  })();
+	</script>
+	
+	<script type="text/javascript">
+	  googletag.cmd.push(function() {
+	    googletag.defineSlot('/157655470/left300x250', [300, 250], 'div-gpt-ad-1462877064286-0').addService(googletag.pubads());
+	    googletag.defineSlot('/157655470/left300x600', [300, 600], 'div-gpt-ad-1462877064286-1').addService(googletag.pubads());
+	    googletag.pubads().enableSingleRequest();
+	    googletag.enableServices();
+	  });
+	</script>
+
+<link rel="preconnect" href="https://yastatic.net/"><link rel="preconnect" href="https://avatars.mds.yandex.net/"><link rel="preconnect" href="https://mc.yandex.ru/"><meta id="https://an.yandex.ru/partner-code-bundles/13206/context_static.js"><script charset="utf-8" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/bf93f22098602b3becf0.js" crossorigin="anonymous"></script><script charset="utf-8" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/9f8b553ced08df6c7af0.js" crossorigin="anonymous"></script><script charset="utf-8" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/bafc1b55b3ad33e1cc64.js" crossorigin="anonymous"></script><script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/pubads_impl_2020111901.js" async=""></script><script async="" importance="high" crossorigin="anonymous" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/host.js"></script><script async="" importance="high" crossorigin="anonymous" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/watch.js"></script><style nonce="">#52fadfb8e8{width:1px;height:1px;position:relative;}</style><style nonce="">#id1834{width:1px;height:1px;top:0px;left:0px;position:absolute;}</style><link rel="preload" href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/integrator.js" as="script"><script type="text/javascript" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/integrator.js"></script><link rel="preload" href="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/integrator_002.js" as="script"><script type="text/javascript" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/integrator_002.js"></script></head>
+<body>
+	<nav>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="mobile_menu">
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div class="mobile_nav">
+						<ul class="mobile_nav_ul">
+							<li><a href="https://allbest.ru/">главная</a></li>
+							<li><a href="https://otherreferats.allbest.ru/">рубрики</a></li>
+							<li><a href="https://otherreferats.allbest.ru/">по алфавиту</a></li>
+						</ul>
+						<ul>
+							<li><a href="https://allbest.ru/union/advert.htm">реклама на сайте</a></li>
+							<li><a href="https://allbest.ru/union/feedback.cgi">обратная связь</a></li>
+						</ul>
+						<a href="https://multiwork.online/newland?from=link11" class="link_price">сколько стоит заказать работу?</a>
+						<a href="https://otherreferats.allbest.ru/" class="last_link">коллекция "otherreferats"</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<header>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="logo"><a href="https://allbest.ru/"><img src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/logo.png" alt=""></a></div>
+					<form action="https://allbest.ru/searchg.html" target="_blank" accept-charset="UTF-8">            
+						<input name="q" type="text" placeholder="Что ищем?">
+						<input type="submit" value="найти">
+					</form>
+				</div>
+			</div>
+		</div>
+	</header>
+	<section class="content">
+		<div class="container-fluid content_block">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="block_white block_inner">
+						<div class="bread_crumbs">
+							<div class="corumbs">
+								<span><a href="https://allbest.ru/">Главная</a></span>
+								<span><a href="https://otherreferats.allbest.ru/">Коллекция "Otherreferats"</a></span>
+								<span><a href="https://otherreferats.allbest.ru/programming/">Программирование, компьютеры и кибернетика</a></span>
+								<span><span>Сети и многопоточность. Создание многопоточного эхо сервера</span></span>
+							</div>
+						</div>
+						<div class="information information_inner">
+							<div class="right_content right_content_inner">
+								<div style="width: 600px; height: 90px; margin-left: auto; margin-right: auto;"><iframe src="https://assist.multiwork.org/fast-form.aspx?from=formalink7" scrolling="no" width="600px" height="90px" frameborder="0"></iframe></div>
+								<h1 class="title_h1">Сети и многопоточность. Создание многопоточного эхо сервера</h1>
+								<div class="content_inner"><h2 class="title_h2">Основы работы с 
+сетями в Java на примере создания сервера Echo и клиента для этого 
+сервера. Многопоточный сервер, обслуживающий одновременно несколько 
+клиентов. Клиентское приложение с полем для ввода данных для отправки и 
+текстовым полем (JTextArea).</h2></div>
+								<table class="table_inner">
+									<tbody>
+										<tr>
+											<td><a href="https://otherreferats.allbest.ru/">Рубрика</a></td>
+											<td><a href="https://otherreferats.allbest.ru/programming/">Программирование, компьютеры и кибернетика</a></td>
+										</tr>
+										<tr>
+											<td>Вид</td>
+											<td>лабораторная работа</td>
+										</tr>
+										<tr>
+											<td>Язык</td>
+											<td>русский</td>
+										</tr>
+										<tr>
+											<td>Дата добавления</td>
+											<td>30.06.2009</td>
+										</tr>
+										<tr>
+											<td>Размер файла</td>
+											<td>57,4&nbsp;K</td>
+										</tr>
+									</tbody>
+								</table>
+								<div class="link_block">
+									<div class="link_block_left">
+										<ul class="link_block_ul link_block_ul_2">
+											<li class="viewtext_link"><a href="https://otherreferats.allbest.ru/programming/00023064_0.html#text">посмотреть текст работы</a></li>
+										</ul>
+										<ul class="link_block_ul">
+											<li class="clouse"><a href="https://otherreferats.allbest.ru/programming/c00023064.html">скачать работу можно здесь</a></li>
+										</ul>
+										<ul class="link_block_ul link_block_ul_2">
+											<li class="workinfo_link"><a href="https://otherreferats.allbest.ru/programming/00023064.html">полная информация о работе</a></li>
+										</ul>
+										<ul class="link_block_ul">
+											<li><a href="https://allbest.ru/o-3c0a65635a2ad68a5c43b89421316d27.html">весь список подобных работ</a></li>
+										</ul>
+									</div>
+									<div class="link_block_right">
+										<div class="baner_yandex">
+											<!-- Yandex.RTB R-A-11417-5 -->
+											<div id="yandex_rtb_R-A-11417-5"><div style="width: 100%; height: 100%;"></div></div>
+											<script type="text/javascript">
+											    (function(w, d, n, s, t) {
+											        w[n] = w[n] || [];
+											        w[n].push(function() {
+											            Ya.Context.AdvManager.render({
+											                blockId: "R-A-11417-5",
+											                renderTo: "yandex_rtb_R-A-11417-5",
+											                async: true
+											            });
+											        });
+											        t = d.getElementsByTagName("script")[0];
+											        s = d.createElement("script");
+											        s.type = "text/javascript";
+											        s.src = "//an.yandex.ru/system/context.js";
+											        s.async = true;
+											        t.parentNode.insertBefore(s, t);
+											    })(this, this.document, "yandexContextAsyncCallbacks");
+											</script>
+										</div>
+										<div><a href="https://multiwork.online/newland?from=linkbaner"><img src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/ba.gif" alt=""></a></div>
+									</div>
+								</div>
+								<h3 class="title_h3">Отправить свою хорошую работу в базу знаний просто. Используйте форму, расположенную ниже</h3>
+								<form method="post" action="//knowledge.allbest.ru/upload.cgi" enctype="multipart/form-data" class="send-work">
+									<input name="title" type="text" class="sendwork" placeholder="Название работы">
+									<div class="block_line_input">
+										<input name="author" type="text" placeholder="Ваше имя или ник">
+										<input name="email" type="text" placeholder="Ваш e-mail (не обязательно)">
+									</div>
+									<input type="hidden" name="keywords" value="othercon">
+									<div class="jq-file" style="display: inline-block; position: relative; overflow: hidden"><div class="jq-file__name">Файл не выбран</div><div class="jq-file__browse">Обзор</div><input name="source" type="file" style="position: absolute; top: 0px; right: 0px; width: 100%; height: 100%; opacity: 0; margin: 0px; padding: 0px;"></div>
+									<div class="block_submit">
+										<input type="hidden" name="ok" value="Отправить свою хорошую работу на сайт"><input id="submit-work" type="submit" name="ok" value="Отправить работу на сайт">
+									</div>
+								</form>
+								<p>Студенты, аспиранты, молодые ученые, использующие базу знаний в своей учебе и работе, будут вам очень благодарны.</p>
+								<div style="width: 600px; height: 90px; margin-left: auto; margin-right: auto;"><iframe src="https://assist.multiwork.org/fast-form.aspx?from=formalink9" scrolling="no" width="600px" height="90px" frameborder="0"></iframe></div>
+								<div class="block_description" id="text">
+<p>2</p>
+<p style="text-align:center">Факультет "Информатика и системы управления"</p>
+<p style="text-align:center"><b>Методические</b> указания к лабораторной работе<b></b></p><b>
+</b><p style="text-align:center"><b>по</b> курсу "Распределенные системы обработки информации"</p>
+<p style="text-align:center">Сети и многопоточность. Создание многопоточного эхо сервера.</p>
+<p style="text-align:center">Москва 2004 г.</p>
+<h1><b>Цель</b> работы</h1>
+<h1></h1>
+<h1>Получить знания об основах работы с сетями в Java на примере 
+создания сервера Echo и клиента для этого сервера (вместо клиента можно 
+использовать утилиту telnet).</h1>
+<h1>Задания к лабораторной работе</h1>
+<h1></h1>
+<h1>Создать Echo сервер.</h1>
+<h1>1. Создать ЕХО сервер, которые будет получать данные от клиента в 
+виде строк и будет возвращать обратно те же строки, но дописывать к ним в
+ начале «Echo:».</h1>
+<h1>2. Сервер должен быть многопоточным, т.е. обслуживать одновременно с несколько клиентов.</h1>
+<h1>3. Для завершения работы клиент должен послать строку «BYE».</h1>
+<h1>Создать клиента для Echo сервера.</h1>
+<h1>1. Клиентское приложение должно иметь поле для ввода данных для отправки.</h1>
+<h1>2. Клиентское приложение должно иметь текстовое поле (JTextArea), в 
+котором должны отображаться отправляемые и получаемые данные.</h1>
+<h1>Контрольные вопросы<b></b></h1><b>
+</b><h1><b>1. </b>Почему на сервере желательно выполнять ожидание 
+(вызывать метод java.net.ServerSocket#accept()) подключения клиентов в 
+потоке, отличном от главного?</h1>
+<h1>2. Какие способы какие конструкторы класса java.net.Socket вы знаете? Чем они отличаются (по действиям, которые они выполняют).</h1>
+<h1><b>Литература</b></h1>
+<h1></h1>
+<h1>1. Серия «Библиотека профессионала» К. Хорстманн Г.Корнелл «Java 2. 
+том 2 «Тонкости программирования»» «Издательство Вильямс» 2002 г.</h1>
+<h1>2. Sun Java 2 SE API. www.java.sun.com</h1>
+<h1>3. Thinking in Java, 2nd ed. by Bruce Eckel, http://fp.nsk.fio.ru/vova/doc/doc/Java/BE/Contents.html</h1>
+<h1>Сетевое программирование</h1>
+<p>Одним из больших достижений Java является безболезненное общение в 
+сети. Проектировщики сетевой библиотеки Java сделали ее похожей на 
+чтение и запись файлов, за исключением того, что этот “файл” находится 
+на удаленной машине и удаленная машина может в точности определить, что 
+нужно сделать с информацией, которую Вы посылаете либо требуете. 
+Насколько возможно, внутренние детали сетевого общения абстрагированы и 
+обрабатываются внутри JVM и локальной машины, на которой установлена 
+среда Java. Модель программирования такая же, как Вы используете в 
+файле; в действительности, Вы просто окутываете сетевое соединение 
+(“сокет”) потоковым объектом, и Вы действуете используя те же вызовы 
+методов, что и с другими потоковыми объектами. К тому же, встроенная в 
+Java множественность процессов очень удобна при общении в сети: 
+установка нескольких соединений сразу.</p>
+<h3><b>Идентификация машины</b></h3><b>
+</b><p><b>Конечно,</b> чтобы убедиться, что соединение установлено с 
+конкретной машиной в сети, должен быть способ уникальной идентификации 
+машины в сети. Раньше при работе в сети было достаточно предоставить 
+уникальные имена для машин внутри локальной сети. Но Java работает в 
+Internet, который требует уникальной идентификации машины с любой другой
+ во всей сети по всему миру. Это достигается с помощью IP (Internet 
+Protocol) адресации, которая может иметь две формы:</p>
+<p>1. Обычная DNS (Domain Name System) форма. Мое доменное имя - 
+bruceeckel.com, и если у меня есть компьютер с именем Opus в моем 
+домене, его доменное имя может быть Opus.bruceeckel.com. Это в точности 
+тип имени, который Вы используете при отсылке почты, и очень часто 
+включается в WWW адрес.</p>
+<p>2. С другой стороны, Вы можете использовать “четырехточечную” форму, в
+ которой четыре номера разделены точками, например 123.255.28.120.</p>
+<p>В обоих случаях IP адрес представляется как 32 битное значение 
+(каждое число из 4-х не может превышать 255), и Вы можете получить 
+специальный объект Java для представления этого номера из формы, 
+представленной выше с помощью метода static InetAddress.getByName() в 
+пакете java.net. Результат - это объект типа InetAddress, который Вы 
+можете использовать для создания “сокета”, как Вы позднее увидите.</p>
+<p>Простой пример использования InetAddress.getByName() показывает, что 
+происходит, когда у Вас есть провайдер интернет по коммутируемым 
+соединениям (ISP). Каждый раз, когда Вы дозваниваетесь, Вам 
+присваивается временный IP. Но пока Вы соединены, Ваш IP адрес ничем не 
+отличается от любого другого IP адреса в интернет. Если кто-то 
+подключится к Вашей машине, используя Ваш IP адрес, он сможет 
+подключиться также к Web или FTP серверу, который запущен на Вашей 
+машине. Конечно, сначала необходимо узнать Ваш IP адрес, а т.к. при 
+каждом соединении присваивается новый адрес, как Вы сможете его узнать?</p>
+<p>Следующая программа использует InetAddress.getByName( ) для 
+определения Вашего IP адреса. Чтобы использовать его, Вы должны знать 
+имя своего компьютера. В Windows 95/98, зайдите в “Settings”, “Control 
+Panel”, “Network”, а затем выберите страничку “Identification”. 
+“Computer name” это имя, которое необходимо задать в командной строке.</p>
+<p>//: c15:WhoAmI.java</p>
+<p>// Определяет Ваш сетевой адрес</p>
+<p>// когда Вы подключены к Internet.</p>
+<p>import java.net.*;</p>
+<p>public class WhoAmI {</p>
+<p>public static void main(String[] args)</p>
+<p>throws Exception {</p>
+<p>if(args.length != 1) {</p>
+<p>System.err.println(</p>
+<p>"Usage: WhoAmI MachineName");</p>
+<p>System.exit(1);</p>
+<p>}</p>
+<p>InetAddress a =</p>
+<p>InetAddress.getByName(args[0]);</p>
+<p>System.out.println(a);</p>
+<p>}</p>
+<p>}</p>
+<p>В этом случае, машина называется “peppy”. Итак, когда я соединяюсь с моим провайдером, я запускаю программу:</p>
+<p>java WhoAmI peppy</p>
+<p>Я получаю в ответ сообщение подобное этому (конечно адрес каждый раз новый):</p>
+<p>peppy/199.190.87.75</p>
+<p>Если я сообщу этот адрес моему другу, и у меня будет Web сервер, 
+запушенный на компьютере, они могут соединиться с ним, зайдя на URL 
+http://199.190.87.75 (только пока я остаюсь в этом сеансе связи). Это 
+иногда может быть удобным способом предоставления информации кому-то 
+другому, либо тестирования конфигурации Web сайта перед тем как 
+опубликовать его на “реальном” сервере.</p>
+<h3><b>Серверы и клиенты</b></h3><b>
+</b><p><b>Основная</b> задача сети - предоставление двум машинам 
+возможности соединиться и общаться друг с другом. Как только две машины 
+нашли друг друга, они могут иметь отличное двухстороннее общение. Но как
+ они находят друг друга? Это как потеряться в парке развлечений: одна 
+машина должна оставаться на месте и слушать, пока другая машина не 
+скажет, “Эй! Где ты?”</p>
+<p>Машина, которая “остается на одном месте” называется сервером, а тот,
+ который ищет, называется клиентом. Это различие важно только когда 
+клиент пытается подключиться к серверу. Как только они соединятся, 
+происходит процесс двухстороннего общения и не важно, что один является 
+сервером, а другой - клиентом.</p>
+<p>Итак, работа сервера - слушать соединение, и это выполняется с 
+помощью специального серверного объекта, который Вы создаете. Работа 
+клиента - попытаться создать соединение с сервером, что выполняется с 
+помощью специального клиентского объекта. Как только соединение 
+установлено, Вы увидите, что у клиента и сервера соединение магически 
+превращается в потоковый объект ввода/вывода, и с этого момента Вы 
+можете рассматривать соединение как файл, который Вы можете читать, и в 
+который Вы можете записывать. Т.о., после установления соединения Вы 
+будете использовать уже знакомые Вам команды ввода/вывода. Это одно из 
+отличных расширений сетевой библиотеки Java.</p>
+<h3><b>Тестирование</b> программ без наличия сети</h3>
+<h3></h3>
+<p>По многим причинам, Вам может не быть доступна клиентская машина, 
+серверная машина, и вообще сеть для тестирования Вашей программы. Вы 
+можете выполнить упражнения в классной комнате, либо, Вы можете написать
+ программу, которая недостаточно устойчива для работы в сети. Создатели 
+интернет протокола были осведомлены о таких проблемах, и они создали 
+специальный адрес, называемый localhost, “локальная петля”, который 
+является IP адресом для тестирования без наличия сети. Обычный способ 
+получения этого адреса в Java это:</p>
+<p>InetAddress addr = InetAddress.getByName(null);</p>
+<p>Если Вы ставите параметр null в метод getByName( ), то, по умолчанию 
+используется localhost. InetAddress - это то, что Вы используете для 
+ссылки на конкретную машину, и Вы должны предоставлять это, перед тем 
+как продолжить дальнейшие действия. Вы не можете манипулировать 
+содержанием InetAddress (но Вы можете распечатать его, как Вы увидите в 
+следующем примере). Единственный способ создать InetAddress - это 
+использовать один из перегруженных статических методов getByName( ) 
+(который Вы обычно используете), getAllByName( ), либо getLocalHost( ).</p>
+<p>Вы можете создать адрес локальной петли, установкой строкового параметра localhost:</p>
+<p>InetAddress.getByName("localhost");</p>
+<p>(присваивание “localhost” конфигурируется в таблице “hosts” на Вашей 
+машине), либо с помощью четырехточечной формы для именования 
+зарезервированного IP адреса для петли:</p>
+<p>InetAddress.getByName("127.0.0.1");</p>
+<p>Все три формы производят одинаковые результаты.</p>
+<h3>Порт: уникальное место внутри машины<b></b></h3><b>
+</b><p><b>IP</b> адреса недостаточно для индикации уникального сервера, 
+т.к. много серверов может существовать на одной машине. Каждая машина в 
+IP также содержит порты, и когда Вы устанавливаете клиент или сервер Вы 
+должны выбрать порт, по которому сервер и клиент договорились 
+соединиться; если Вы встречаете кого-то, IP адрес это окрестность и порт
+ это бар.</p>
+<p>Порт это не физическое расположение в машине, а программная 
+абстракция (большей частью для бухгалтерского назначения). Клиентская 
+программа знает, как соединиться с машиной по IP адресу, но как 
+соединиться с нужной службой (потенциально одной из многих на этой 
+машине)? Вот где номера портов являются вторым уровнем адресации. Идея в
+ том, что Вы запрашиваете конкретный порт, этим запрашивая службу, 
+ассоциированную с этим портом. Время дня это простой пример службы. 
+Обычно, каждая служба ассоциируется с уникальным номером порта на 
+заданной серверной машине. Необходимо знать заранее, на каком порту 
+запущена необходимая служба.</p>
+<p>Системные службы резервируют номера портов с 1 по 1024, так что Вы не
+ должны использовать ни один из портов, который Вы знаете, что он 
+используется. Первый выбор порта для примеров в этой книге это порт 
+номер 8080 (в память почтенного и древнего 8-битного чипа Intel 8080 на 
+моем первом компьютере, с операционной системой CP/M).</p>
+<h3><b>Сокеты</b></h3><b>
+</b><p><b>Сокет</b> - это программная абстракция, используемая для 
+представления “терминалов” соединений между двумя машинами. Для данного 
+соединения, существует сокет на каждой машине, и Вы можете представить 
+гипотетический “кабель” соединяющий две машины, каждый конец которого 
+вставлен в сокет. Конечно, какое аппаратное обеспечение и кабель между 
+ними неизвестно. Основной смысл абстракции в том, что нам не нужно знать
+ больше, чем необходимо.</p>
+<p>В Java, Вы создаете сокет для установления соединения с другой 
+машиной, затем Вы получаете InputStream и OutputStream (либо с помощью 
+соответствующих преобразователей, Reader и Writer) из сокета, который 
+соответствующим образом представляет соединение, как потоковый объект 
+ввода вывода. Есть два класса сокетов, основанных на потоках: 
+ServerSocket - используется сервером, чтобы “слушать” входящие 
+соединения, и Socket - используется клиентом для инициирования 
+соединения. Как только клиент создает соединение по сокету, ServerSocket
+ возвращает (с помощью метода accept( )) соответствующий объект Socket 
+по которому будет происходить связь на стороне сервера. Начиная с этого 
+момента, у Вас появляется соединение Socket к Socket, и Вы считаете эти 
+соединения одинаковыми, потому что они действительно одинаковые. В 
+результате, Вы используете методы getInputStream( ) и getOutputStream( )
+ для создания соответствующих объектов InputStream и OutputStream из 
+каждого Socket. Они должны быть обернуты внутри буферов и форматирующих 
+классов, как и любой другой потоковый объект.</p>
+<p>ServerSocket может показаться еще одним примером запутанной схемы 
+имен в библиотеках Java. Вы можете подумать, что ServerSocket лучше 
+назвать “ServerConnector” либо как-нибудь иначе без слова “Socket” в 
+нем. Вы также можете подумать, что ServerSocket и Socket должны быть оба
+ унаследованы от одного из базовых классов. В самом деле, оба класса 
+содержат несколько методов совместно, но этого недостаточно, чтобы дать 
+им общий базовых класс. Взамен, работа ServerSocket ожидать, пока не 
+подсоединится другая машина, и затем возвратить подлинный Socket. Вот 
+почему ServerSocket кажется немного неправильно названным, т.к. его 
+работа в действительности не быт сокетом, а просто создавать объект 
+Socket, когда кто-то другой к нему подключается.</p>
+<p>Однако ServerSocket создает физический “сервер” или слушающий сокет 
+на серверной машине. Этот сокет слушает входящие соединения и затем 
+возвращает “установленный” сокет (с определенными локальными и 
+удаленными конечными точками) посредством метода accept(). В 
+замешательство приводит то, что оба этих сокета (слушающий и 
+установленный) ассоциированы с тем же самым серверным сокетом. Слушающий
+ сокет может допустить только запросы на новое соединение, но не пакеты 
+данных. Итак, пока ServerSocket не имеет смысла программного, зато имеет
+ смысл “физический”.</p>
+<p>Когда Вы создаете ServerSocket, Вы задаете для него только номер 
+порта. Вам не нужно задавать IP адрес, т.к. он уже существует на машине.
+ Однако когда Вы создаете Socket, Вы должны задать и IP адрес и номер 
+порта машины, с которой Вы хотите соединиться. (Тем не менее, Socket, 
+который возвращается методом ServerSocket.accept(), уже содержит всю эту
+ информацию.)</p>
+<h3><b>Простой</b> пример сервера и клиента<b></b></h3><b>
+</b><p><b>Этот</b> пример показывает простую работу сервера и клиента, 
+используя сокеты. Все, что делает сервер, - это просто ожидание 
+соединения, затем использует Socket полученный из того соединения для 
+создания InputStream и OutputStream. Они конвертируются в Reader и 
+Writer, затем в BufferedReader и PrintWriter. После этого все, что он 
+получает из BufferedReader, он отправляет на PrintWriter пока не получит
+ строку “END,” после чего, он закрывает соединение.</p>
+<p>Клиент устанавливает соединение с сервером, затем создает 
+OutputStream и выполняет те же операции, что и сервер. Строки текста 
+посылаются через результирующий PrintWriter. Клиент также создает 
+InputStream (снова, с соответствующими конверсиями и облачениями) чтобы 
+слушать, что говорит сервер (а в нашем случае он возвращает слова 
+назад).</p>
+<p>И сервер, и клиент используют один и тот же номер порта, а клиент 
+использует адрес локальной петли для соединения с сервером на той же 
+машине, так что Вам не нужно тестировать это в сети. (Для некоторых 
+конфигураций, Вам не нужно будет подключаться к сети, чтобы программа 
+работала, даже если Вы общаетесь по сети.)</p>
+<p>Вот сервер:</p>
+<p>//: c15:JabberServer.java</p>
+<p>// Очень простой сервер, который только</p>
+<p>// отображает то, что посылает клиент.</p>
+<p>import java.io.*;</p>
+<p>import java.net.*;</p>
+<p>public class JabberServer {</p>
+<p>// Выбираем номер порта за пределами 1-1024:</p>
+<p>public static final int PORT = 8080;</p>
+<p>public static void main(String[] args) </p>
+<p>throws IOException {</p>
+<p>ServerSocket s = new ServerSocket(PORT);</p>
+<p>System.out.println("Started: " + s);</p>
+<p>try {</p>
+<p>// Блокируем пока не произойдет соединение:</p>
+<p>Socket socket = s.accept();</p>
+<p>try {</p>
+<p>System.out.println(</p>
+<p>"Connection accepted: "+ socket);</p>
+<p>BufferedReader in = </p>
+<p>new BufferedReader(</p>
+<p>new InputStreamReader(</p>
+<p>socket.getInputStream()));</p>
+<p>// Вывод автоматически обновляется </p>
+<p>// классом PrintWriter:</p>
+<p>PrintWriter out =</p>
+<p>new PrintWriter(</p>
+<p>new BufferedWriter(</p>
+<p>new OutputStreamWriter(</p>
+<p>socket.getOutputStream())),true);</p>
+<p>while (true) {</p>
+<p>String str = in.readLine();</p>
+<p>if (str.equals("END")) break;</p>
+<p>System.out.println("Echoing: " + str);</p>
+<p>out.println(str);</p>
+<p>}</p>
+<p>// всегда закрываем оба сокета...</p>
+<p>} finally {</p>
+<p>System.out.println("closing...");</p>
+<p>socket.close();</p>
+<p>}</p>
+<p>} finally {</p>
+<p>s.close();</p>
+<p>}</p>
+<p>}</p>
+<p>} ///:~</p>
+<p>Вы видите, что объекту ServerSocket нужен только номер порта, не IP 
+адрес (т.к. он запущен на этой машине!). Когда Вы вызываете метод 
+accept(), метод блокирует выполнение программы, пока какой-нибудь клиент
+ не попробует соединиться. То есть, он ожидает соединение, но другие 
+процессы могут выполняться (см. Главу 14). Когда соединение сделано, 
+accept() возвращает объект Socket представляющий это соединение.</p>
+<p>Если конструктор ServerSocket завершается неуспешно, программа просто
+ завершается (обратите внимание, что мы должны считать, что конструктор 
+ServerSocket не оставляет открытых сетевых сокетов, если он завершается 
+неудачно). В этом случае main() выбрасывает исключение IOException и 
+блок try не обязателен. Если конструктор ServerSocket завершается 
+успешно, то остальные вызовы методов должны быть окружены блоками 
+try-finally, чтобы убедиться, что независимо от того, как блок завершит 
+работу, ServerSocket будет корректно закрыт.</p>
+<p>Та же логика используется для Socket возвращаемого методом accept(). 
+Если вызов accept() неуспешный, то мы должны считать что Socket не 
+существует и не держит никаких ресурсов, так что он не нуждается в 
+очистке. Но если вызов успешный, следующие объявления должны быть 
+окружены блоками try-finally так что в случае неуспешного вызова Socket 
+будет очищен. Заботиться здесь об этом обязательно, т.к. сокеты 
+используют важные ресурсы, располагающиеся не в памяти, так что Вы 
+должны тщательно очищать их (поскольку в Java нет деструктора, чтобы 
+сделать это за Вас).</p>
+<p>И ServerSocket, и Socket, созданные методом accept( ), печатаются в 
+System.out. Это значит, что их методы toString( ) вызываются 
+автоматически. Вот что получается:</p>
+<p>ServerSocket[addr=0.0.0.0,PORT=0,localport=8080]</p>
+<p>Socket[addr=127.0.0.1,PORT=1077,localport=8080]</p>
+<p>Скоро Вы увидите, как они объединяются вместе с тем, что делает клиент.</p>
+<p>Следующая часть программы выглядит как программа для открытия файлов 
+для чтения и записи за исключением того, что InputStream и OutputStream 
+создаются из объекта Socket. И объект InputStream и объект OutputStream 
+конвертируются в объекты Reader и Writer, используя классы “конвертеры” 
+InputStreamReader и OutputStreamWriter, соответственно. Вы можете также 
+использовать напрямую классы из Java 1.0 InputStream и OutputStream, но с
+ выводом есть явное преимущество при использовании Writer. Это 
+реализуется с помощью PrintWriter, в котором перегруженный конструктор 
+берет второй аргумент, а boolean - флаг, который индицирует, когда какой
+ автоматически сбрасывает вывод в конце каждого вывода println() (но не 
+print()) выражения. Каждый раз, когды Вы направляете данные в out, его 
+буфер должен сбрасываться так информация передается о сети. Сброс важен 
+для этого конкретного примера, т.к. клиент и сервер ждут строку данных 
+друг от друга, перед тем, как что-то сделать. Если сброса буферов не 
+происходит, информация не будет отправлена по сети, пока буфер полон, 
+что вызовем много проблем в этом примере.</p>
+<p>При написании сетевых программ Вы должны быть внимательными при 
+использовании автоматического сброса буферов. Каждый раз, когда Вы 
+сбрасываете буфер, пакет должен создаться и отправиться. В этом случае, 
+это именно то, что мы хотим, т.к. если пакет, содержащий строку, не 
+отослан, то обмен информацией между сервером и клиентом остановится. С 
+другой стороны, конец строки это конец сообщения. Но во многих случаях, 
+сообщения не ограничиваются строками, так что более эффективно будет не 
+использовать автоматический сброс, а позволить встроенной буферизации 
+решать, когда необходимо создать и отослать пакеты. В этом случае, могут
+ отсылаться большие пакеты, и процесс пойдет быстрее.</p>
+<p>Запомните, все потоки, которые Вы открываете, буферизованы. В конце 
+этой главы есть упражнение, показывающее Вам, что происходит, если Вы не
+ буферизуете потоки (все замедляется).</p>
+<p>Бесконечный цикл while читает строки из BufferedReader in и 
+записывает информацию вSystem.out and to the PrintWriter out. Запомните,
+ что in и out могут быть любыми потоками, они просто соединены в сети.</p>
+<p>Когда клиент отсылает строку, состоящую из “END,” программа прерывает выполнение цикла и закрывает Socket. </p>
+<p>Вот клиент:</p>
+<p>//: c15:JabberClient.java</p>
+<p>// Очень простой клиент, который просто отсылает строки серверу</p>
+<p>// и читает строки, которые посылает сервер</p>
+<p>import java.net.*;</p>
+<p>import java.io.*;</p>
+<p>public class JabberClient {</p>
+<p>public static void main(String[] args)</p>
+<p>throws IOException {</p>
+<p>// Установка параметра в null в getByName()</p>
+<p>// возвращает специальный IP address - "Локальную петлю",</p>
+<p>// для тестирования на одной машине без наличия сети</p>
+<p>InetAddress addr =</p>
+<p>InetAddress.getByName(null);</p>
+<p>// Альтернативно Вы можете использовать</p>
+<p>// адрес или имя:</p>
+<p>// InetAddress addr =</p>
+<p>// InetAddress.getByName("127.0.0.1");</p>
+<p>// InetAddress addr =</p>
+<p>// InetAddress.getByName("localhost");</p>
+<p>System.out.println("addr = " + addr);</p>
+<p>Socket socket =</p>
+<p>new Socket(addr, JabberServer.PORT);</p>
+<p>// Окружаем все блоками try-finally to make</p>
+<p>// чтобы убедиться что сокет закрывается:</p>
+<p>try {</p>
+<p>System.out.println("socket = " + socket);</p>
+<p>BufferedReader in =</p>
+<p>new BufferedReader(</p>
+<p>new InputStreamReader(</p>
+<p>socket.getInputStream()));</p>
+<p>// Вывод автоматически сбрасывается</p>
+<p>// с помощью PrintWriter:</p>
+<p>PrintWriter out =</p>
+<p>new PrintWriter(</p>
+<p>new BufferedWriter(</p>
+<p>new OutputStreamWriter(</p>
+<p>socket.getOutputStream())),true);</p>
+<p>for(int i = 0; i &lt; 10; i ++) {</p>
+<p>out.println("howdy " + i);</p>
+<p>String str = in.readLine();</p>
+<p>System.out.println(str);</p>
+<p>}</p>
+<p>out.println("END");</p>
+<p>} finally {</p>
+<p>System.out.println("closing...");</p>
+<p>socket.close();</p>
+<p>}</p>
+<p>}</p>
+<p>} ///:~</p>
+<p>В методе main() Вы видите все три пути для возврата IP адреса 
+локальной петли: используя null, localhost, либо явно зарезервированный 
+адрес 127.0.0.1. Конечно, если Вы хотите соединиться с машиной в сети, 
+Вы подставляете IP адрес этой машины. Когда InetAddress addr печатается 
+(с помощью автоматического вызова метода toString()) получается 
+следующий результат:</p>
+<p>localhost/127.0.0.1</p>
+<p>Подстановкой параметра null в getByName( ), она по умолчанию использует localhost, и это создает специальный адрес 127.0.0.1.</p>
+<p>Обратите внимание, что Socket, названный socket, создается и с типом 
+InetAddress и с номером порта. Чтобы понимать, что это значит, когда Вы 
+печатаете один из этих объектов Socket, помните, что соединение с 
+Интернет определяется уникально этими четырьмя элементами данных: 
+clientHost, clientPortNumber, serverHost, и serverPortNumber. Когда 
+сервер запускается, он берет присвоенный ему порт (8080) на localhost 
+(127.0.0.1). Когда клиент приходит, распределяется следующий доступный 
+порт на той же машине, в нашем случае - 1077, который, так случилось, 
+оказался расположен на той же самой машине (127.0.0.1), что и сервер. 
+Теперь, необходимо данные перемещать между клиентом и сервером, каждая 
+сторона должна знать, куда их посылать. Поэтому во время процесса 
+соединения с “известным” сервером, клиент посылает “обратный адрес”, так
+ что сервер знает, куда отсылать его данные. Вот, что Вы видите в 
+примере серверной части:</p>
+<p>Socket[addr=127.0.0.1,port=1077,localport=8080]</p>
+<p>Это значит, что сервер только что принял соединение с адреса 
+127.0.0.1 и порта 1077, когда слушал свой локальный порт (8080). На 
+стороне клиента:</p>
+<p>Socket[addr=localhost/127.0.0.1,PORT=8080,localport=1077]</p>
+<p>это значит, что клиент создал соединение с адресом 127.0.0.1 и портом 8080, используя локальный порт 1077.</p>
+<p>Вы увидите, что каждый раз, когда Вы запускаете нового клиента, номер
+ локального порта увеличивается. Отсчет начинается с 1025 (предыдущие 
+являются зарезервированными) и продолжается до того момента, пока Вы не 
+перезагрузите машину, после чего он снова начинается с 1025. (На UNIX 
+машинах, как только достигается максимальное число сокетов, нумерация 
+начинается с самого меньшего доступного номера.)</p>
+<p>Как только объект Socket создан, процесс перевода его в 
+BufferedReader и PrintWriter тот же самый, что и в серверной части 
+(снова, в обоих случаях Вы начинаете с Socket). Здесь, клиент инициирует
+ соединение отсылкой строки “howdy” следующее за номером. Обратите 
+внимание, что буфер должен быть снова сброшен (что происходит 
+автоматически по второму аргументу в конструкторе PrintWriter). Если 
+буфер не будет сброшен, все общение зависнет, т.к. строка “howdy” 
+никогда не будет отослана, (буфер не будет достаточно полным, чтобы 
+выполнить отсылку автоматически). Каждая строка, отсылаемая сервером 
+обратно, записывается в System.out для проверки, что все работает 
+правильно. Для прекращения общения отсылается условный знак - строка 
+“END”. Если клиент прерывает соединение, то сервер выбрасывает 
+исключение.</p>
+<p>Вы видите, что такая же забота здесь тоже присутствует, чтобы 
+убедиться, что ресурсы представленные Socket корректно освобождаются, с 
+помощью блока try-finally.</p>
+<p>Сокеты создают “подписанное” (dedicated) соединение, которое 
+сохраняется, пока не произойдет явный разрыв соединения. (Подписанное 
+соединение может еще быть разорвано неявно, если одна сторона, либо 
+промежуточное соединение, разрушается.) Это значит, что обе стороны 
+заблокированы в общении и соединение постоянно открыто. Кажется, что это
+ просто логический подход к передаче данных, однако это дает 
+дополнительную нагрузку на сеть. Позже в этой главе Вы увидите другой 
+метод передачи данных по сети, в котором соединения являются временными.</p>
+<h3>Обслуживание нескольких клиентов</h3>
+<p></p>
+<p>JabberServer работает, но он может обслуживать только одного клиента 
+одновременно. В типичном сервере Вы захотите иметь возможность общаться с
+ несколькими клиентами одновременно. Решение - это многопоточность, а в 
+языках, которые напрямую не поддерживают многопоточность, это означает 
+все виды сложностей. В Главе 14 Вы увидели, что многопоточность в Java 
+настолько просто, насколько это возможно, в то время, как 
+многопоточность вообще является сложной темой. Т.к. поддержка нитей в 
+Java является прямой и открытой, то создание сервера, поддерживающего 
+множество клиентов, оказывается относительно простой задачей.</p>
+<p>Основная схема это создание единичного объекта ServerSocket в 
+серверной части и вызвать метод accept() для ожидания нового соединения.
+ Когда accept() возвращает управление, Вы берете возвращенный Socket и 
+используете его для создания новой нити(потока), чьей работой является 
+обслуживание этого клиента. Затем Вы вызываете метод accept() снова для 
+ожидания нового клиента.</p>
+<p>В следующем коде серверной части Вы увидите, что это выглядит также 
+как и в примере JabberServer.java за исключением того, что все операции 
+по обслуживанию конкретного клиента перемещены внутрь класса нити 
+(потока):</p>
+<p>//: c15:MultiJabberServer.java</p>
+<p>// Сервер, использующий многопоточность</p>
+<p>// для обслуживания любого числа клиентов.</p>
+<p>import java.io.*;</p>
+<p>import java.net.*;</p>
+<p>class ServeOneJabber extends Thread {</p>
+<p>private Socket socket;</p>
+<p>private BufferedReader in;</p>
+<p>private PrintWriter out;</p>
+<p>public ServeOneJabber(Socket s)</p>
+<p>throws IOException {</p>
+<p>socket = s;</p>
+<p>in =</p>
+<p>new BufferedReader(</p>
+<p>new InputStreamReader(</p>
+<p>socket.getInputStream()));</p>
+<p>// Включение автосброса буферов:</p>
+<p>out = </p>
+<p>new PrintWriter(</p>
+<p>new BufferedWriter(</p>
+<p>new OutputStreamWriter(</p>
+<p>socket.getOutputStream())), true);</p>
+<p>// Если какой либо, указанный выше класс выбросит исключение</p>
+<p>// вызывающая процедура ответственна за закрытие сокета</p>
+<p>// В противном случае нить(поток) закроет его.</p>
+<p>start(); // Вызывает run()</p>
+<p>}</p>
+<p>public void run() {</p>
+<p>try {</p>
+<p>while (true) {</p>
+<p>String str = in.readLine();</p>
+<p>if (str.equals("END")) break;</p>
+<p>System.out.println("Echoing: " + str);</p>
+<p>out.println(str);</p>
+<p>}</p>
+<p>System.out.println("closing...");</p>
+<p>} catch(IOException e) {</p>
+<p>System.err.println("IO Exception");</p>
+<p>} finally {</p>
+<p>try {</p>
+<p>socket.close();</p>
+<p>} catch(IOException e) {</p>
+<p>System.err.println("Socket not closed");</p>
+<p>}</p>
+<p>}</p>
+<p>}</p>
+<p>}</p>
+<p>public class MultiJabberServer {</p>
+<p>static final int PORT = 8080;</p>
+<p>public static void main(String[] args)</p>
+<p>throws IOException {</p>
+<p>ServerSocket s = new ServerSocket(PORT);</p>
+<p>System.out.println("Server Started");</p>
+<p>try {</p>
+<p>while(true) {</p>
+<p>// Останавливает выполнение, до нового соединения:</p>
+<p>Socket socket = s.accept();</p>
+<p>try {</p>
+<p>new ServeOneJabber(socket);</p>
+<p>} catch(IOException e) {</p>
+<p>// Если неудача - закрываем сокет,</p>
+<p>// в противном случае нить закроет его:</p>
+<p>socket.close();</p>
+<p>}</p>
+<p>}</p>
+<p>} finally {</p>
+<p>s.close();</p>
+<p>}</p>
+<p>}</p>
+<p>} ///:~</p>
+<p>Нить ServeOneJabber берет объект Socket, который создается методом 
+accept() в main() каждый раз, когда новый клиент создает соединение. 
+Затем, как раньше, он создает объект BufferedReader и объект PrintWriter
+ с авто-сбросом, используя Socket. Наконец, он вызывает специальный 
+метод объекта Thread - start(), который выполняет инициализации в нити и
+ затем вызывает метод run(). Здесь выполняются те же действия, что и в 
+предыдущем примере: чтение данных из сокета, а затем возврат этих данных
+ обратно, пока не придет специальный сигнал - строка “END”.</p>
+<p>Ответственность за очистку сокета должна быть снова тщательно 
+обработана. В этом случае, сокет создается за пределами ServeOneJabber 
+так что ответственность может быть разделена. Если конструктор 
+ServeOneJabber завершится неудачно, он просто вызовет исключение 
+вызывающему методу, который затем очистит нить. Но если конструктор 
+завершится успешно, то объект ServeOneJabber возьмет ответственность за 
+очистку нить на себя, в его методе run().</p>
+<p>Посмотрите, насколько простая реализация у MultiJabberServer. Как 
+раньше, ServerSocket создается и вызывается метод accept() для ожидания 
+нового соединения. Но в этот момент возвращаемое значение accept() 
+(объекты Socket) передается в конструктор ServeOneJabber, который 
+создает новую нить для обработки этого соединения. Когда соединение 
+закрывается, нить завершает свою работу.</p>
+<p>Если создание ServerSocket прерывается, снова выбрасывается в main().
+ Но если создание успешное, внешний блок try-finally гарантирует его 
+очистку. Внутренний блок try-catch защищает только от ошибок в 
+конструкторе ServeOneJabber; если конструктор выполняется без ошибок, то
+ нить ServeOneJabber закроет связанный с ней сокет.</p>
+<p>Для проверки того, что сервер поддерживает несколько клиентов, 
+следующая программа создает множество клиентов (используя нити) которые 
+подключаются к одному и тому же серверу. Максимальное число нитей 
+определяется переменной final int MAX_THREADS.</p>
+<p>//: c15:MultiJabberClient.java</p>
+<p>// Клиент для проверки MultiJabberServer</p>
+<p>// посредством запуска множества клиентов.</p>
+<p>import java.net.*;</p>
+<p>import java.io.*;</p>
+<p>class JabberClientThread extends Thread {</p>
+<p>private Socket socket;</p>
+<p>private BufferedReader in;</p>
+<p>private PrintWriter out;</p>
+<p>private static int counter = 0;</p>
+<p>private int id = counter++;</p>
+<p>private static int threadcount = 0;</p>
+<p>public static int threadCount() {</p>
+<p>return threadcount;</p>
+<p>}</p>
+<p>public JabberClientThread(InetAddress addr) {</p>
+<p>System.out.println("Making client " + id);</p>
+<p>threadcount++;</p>
+<p>try {</p>
+<p>socket =</p>
+<p>new Socket(addr, MultiJabberServer.PORT);</p>
+<p>} catch(IOException e) {</p>
+<p>System.err.println("Socket failed");</p>
+<p>// Если сокет не создался,</p>
+<p>// ничего не надо чистить.</p>
+<p>}</p>
+<p>try {</p>
+<p>in = </p>
+<p>new BufferedReader(</p>
+<p>new InputStreamReader(</p>
+<p>socket.getInputStream()));</p>
+<p>// Включение авто-очистки буфера:</p>
+<p>out =</p>
+<p>new PrintWriter(</p>
+<p>new BufferedWriter(</p>
+<p>new OutputStreamWriter(</p>
+<p>socket.getOutputStream())), true);</p>
+<p>start();</p>
+<p>} catch(IOException e) {</p>
+<p>// Сокет должен быть закрыт при появлении любой ошибки</p>
+<p>try {</p>
+<p>socket.close();</p>
+<p>} catch(IOException e2) {</p>
+<p>System.err.println("Socket not closed");</p>
+<p>}</p>
+<p>}</p>
+<p>// Иначе сокет будет закрыт</p>
+<p>// методом run() у нити.</p>
+<p>}</p>
+<p>public void run() {</p>
+<p>try {</p>
+<p>for(int i = 0; i &lt; 25; i++) {</p>
+<p>out.println("Client " + id + ": " + i);</p>
+<p>String str = in.readLine();</p>
+<p>System.out.println(str);</p>
+<p>}</p>
+<p>out.println("END");</p>
+<p>} catch(IOException e) {</p>
+<p>System.err.println("IO Exception");</p>
+<p>} finally {</p>
+<p>// Всегда закрывает его:</p>
+<p>try {</p>
+<p>socket.close();</p>
+<p>} catch(IOException e) {</p>
+<p>System.err.println("Socket not closed");</p>
+<p>}</p>
+<p>threadcount--; // Завершение нити</p>
+<p>}</p>
+<p>}</p>
+<p>}</p>
+<p>public class MultiJabberClient {</p>
+<p>static final int MAX_THREADS = 40;</p>
+<p>public static void main(String[] args)</p>
+<p>throws IOException, InterruptedException {</p>
+<p>InetAddress addr =</p>
+<p>InetAddress.getByName(null);</p>
+<p>while(true) {</p>
+<p>if(JabberClientThread.threadCount()</p>
+<p>&lt; MAX_THREADS)</p>
+<p>new JabberClientThread(addr);</p>
+<p>Thread.currentThread().sleep(100);</p>
+<p>}</p>
+<p>}</p>
+<p>} ///:~</p>
+<p>Конструктор JabberClientThread берет InetAddress и использует его для
+ открытия Socket. Вы возможно уже начинаете видеть шаблон: Socket 
+используется всегда для создания некоторых типов Reader и/или Writer 
+(или InputStream и/или OutputStream) объектов, что является единственным
+ способом, в котором Socket может быть использован. (Вы можете, конечно,
+ написать один-два класса для автоматизации этого процесса, вместо того,
+ чтобы заново все это набирать, если для Вас это сложно.) Итак, start() 
+выполняет инициализации нити и вызывает метод run(). Здесь, сообщения 
+отсылаются серверу, и информация с сервера печатается на экране. Однако,
+ нить имеет ограниченное время жизни и в один прекрасный момент 
+завершается. Обратите внимание, что сокет очищается, если конструктор 
+завершается неуспешно, после того как сокет создается, но перед тем, как
+ конструктор завершится. В противном случае ответственность за вызов 
+метода close() для сокета ложится на метод run().</p>
+<p>Переменная threadcount хранит число - сколько объектов 
+JabberClientThread в данный момент существует. Она увеличивается в 
+конструкторе и уменьшается при выходе из метода run() (и это значит, что
+ нить завершается). В методе MultiJabberClient.main() Вы видите, что 
+число нитей проверяется, и если нитей слишком много - новые не 
+создаются. Затем метод засыпает. При этом, некоторые нити будут 
+завершаться и новые смогут быть созданы. Вы можете поэкспериментировать с
+ MAX_THREADS, чтобы посмотреть, когда у Вашей системы появятся проблемы с
+ обслуживанием большого количества соединений.</p>
+								</div>
+								<div class="link_down">
+									<div><a href="https://otherreferats.allbest.ru/programming/c00023064.html">лабораторная работа "Сети и многопоточность. Создание многопоточного эхо сервера" скачать</a></div>
+								</div><br>
+								<h3 class="title_h3" id="similar">Подобные документы</h3>
+								<ul class="list_ul conunt_ul">
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/2c0a65625a2bd79a4d43a89421216d37_0.html">Объектно-ориентированное программирование Java "Чат"</a></div><p>Описание
+ и установка интегрированной среды разработки Eclipse. Описание языка 
+Java. Описание классов и методов, пакетов, использованных в программе, 
+сервера и клиента. Разработка руководства пользователя для клиента и 
+сервера. Пример работы чата.<br><br>курсовая работа [443,5&nbsp;K], добавлен 18.05.2015<br></p></li>
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/2c0b65635b2ad68b5d53a89521316d36_0.html">Проектирование и создание FTP-сервера на базе ОС Linux</a></div><p>Организация
+ корпоративного файлового сервера, выполняющего функции прокси-сервера 
+на базе ОС Linux. Процесс его реализации. Выбор оптимальной 
+аппаратно-программной платформы. Расчёт сметы затрат на выполнение 
+объёма работ по созданию FTP-сервера.<br><br>дипломная работа [2,0&nbsp;M], добавлен 06.07.2012<br></p></li>
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/2c0b65625a3bd78a4c53b98421316c27_0.html">Проект организация подключения к сети Интернет с использованием PROXY-сервера</a></div><p>Основные
+ характеристики и особенности использования прокси-сервера в локальной 
+сети. Способы выхода в Интернет из локальных сетей. Методы 
+аутентификации прокси-сервером пользователя клиента, авторизация клиента
+ для доступа к определенному контенту.<br><br>курсовая работа [887,9&nbsp;K], добавлен 21.04.2019<br></p></li>
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/3c0a65625b3ac69a5c53b88421206c27_0.html">Создание сервера приема, обработки и отправки SMS</a></div><p>Спецификация
+ организации службы Short Message Service. Алгоритм работы сервера и 
+возможность расширения функциональных возможностей. Реализация проекта 
+на языке высокого уровня С++ на платформе Linux. Расчет себестоимости и 
+цены программного продукта.<br><br>дипломная работа [168,6&nbsp;K], добавлен 19.01.2014<br></p></li>
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/2c0a65625a2ad69a4d43b88521216c26_0.html">Сборка и конфигурирование сервера</a></div><p>История
+ и основные сведения о сервере. Классификация и ресурсы серверов. 
+Важность системы охлаждения для сервера. Выбор компонентов для сборки 
+сервера. Основные неисправности и способы их устранения. Проведение 
+технического обслуживания и ремонта сервера.<br><br>дипломная работа [2,1&nbsp;M], добавлен 24.06.2015<br></p></li>
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/2c0b65635b2bd78b5d53b89521206d36_0.html">WEB-технологии</a></div><p>Многопоточный
+ веб-сервер с входным и обрабатывающими модулями. HTTP—протокол передачи
+ гипертекста. Установка и настройка локального веб-сервера "OpenServer".
+ Установка phpMyAdmin, конфигурация PHP. Настройка веб-сервера и 
+виртуальных хостов, модулей.<br><br>курсовая работа [3,2&nbsp;M], добавлен 08.12.2013<br></p></li>
+									<li><div class="list_link"><a href="https://knowledge.allbest.ru/programming/2c0b65625b3ac68b4d43a88421316d36_0.html">Система безопасности сервера баз данных</a></div><p>Создание
+ баз данных и таблиц. Ограничение доступа для пользователей. Хранимая 
+процедура, доступная всем пользователям. Скрипты для проверки 
+ограничений. Методы обеспечения безопасности сервера базы данных. 
+Чтение, изменение и добавление данных.<br><br>лабораторная работа [1,4&nbsp;M], добавлен 23.07.2012<br></p></li>
+								</ul>
+								<div class="link_down">
+									<div><a href="https://allbest.ru/o-3c0a65635a2ad68a5c43b89421316d27.html">Другие документы, подобные "Сети и многопоточность. Создание многопоточного эхо сервера"</a></div>
+								</div>								<div class="link_down"><a href="https://multiwork.online/newland?from=link5"><img src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/bp.png" alt=""></a></div>
+								<ul class="nav_inner">
+									<li><a href="https://allbest.ru/">главная</a></li>
+									<li><a href="https://otherreferats.allbest.ru/">рубрики</a></li>
+									<li><a href="https://otherreferats.allbest.ru/">по алфавиту</a></li>
+									<li><a href="https://otherreferats.allbest.ru/programming/00023064_0.html#">вернуться в начало страницы</a></li>
+									<li><a href="https://otherreferats.allbest.ru/programming/00023064_0.html#text">вернуться к началу текста</a></li>
+									<li><a href="https://otherreferats.allbest.ru/programming/00023064_0.html#similar">вернуться к подобным работам</a></li>
+								</ul>
+							</div>
+							<div class="saitbar">
+								<div class="baner_saitbar">
+									<!-- /157655470/left300x250 -->
+									<div id="div-gpt-ad-1462877064286-0" style="height:250px; width:300px;" data-google-query-id="CK6i2tXGsO0CFRtWwgodadQFIw">
+									
+									<div id="google_ads_iframe_/157655470/left300x250_0__container__" style="border: 0pt none; display: inline-block; width: 300px; height: 250px;"><iframe style="border: 0px none; vertical-align: bottom;" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/container.htm" id="google_ads_iframe_/157655470/left300x250_0" title="3rd party ad content" name="" scrolling="no" marginwidth="0" marginheight="0" data-is-safeframe="true" data-google-container-id="1" data-load-complete="true" width="300" height="250" frameborder="0"></iframe></div></div>
+								</div>
+								<ul class="inner_nav">
+									<li><a href="https://otherreferats.allbest.ru/">Рубрики</a></li>
+									<li><a href="https://otherreferats.allbest.ru/">По алфавиту</a></li>
+									<li><a href="https://otherreferats.allbest.ru/upload.html">Закачать файл</a></li>
+									<li class="active_nav"><a href="https://multiwork.online/newland?from=link1.s">Заказать работу</a></li>
+									<li><a href="https://allbest.ru/referat/">Вебмастеру</a></li>
+									<li><a href="https://allbest.ru/referat/">Продать</a></li>
+								</ul>
+								<div class="baner_saitbar">
+									<!-- /157655470/left300x600 -->
+									<div id="div-gpt-ad-1462877064286-1" style="height:600px; width:300px;" data-google-query-id="CK-i2tXGsO0CFRtWwgodadQFIw">
+									
+									<div id="google_ads_iframe_/157655470/left300x600_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/157655470/left300x600_0" title="3rd party ad content" name="google_ads_iframe_/157655470/left300x600_0" scrolling="no" marginwidth="0" marginheight="0" style="border: 0px none; vertical-align: bottom;" srcdoc="" data-google-container-id="2" data-load-complete="true" width="300" height="600" frameborder="0"></iframe></div></div>
+								</div>
+								<div class="fixed_bar">
+									<ul class="link_block_ul">
+										<li><a href="https://allbest.ru/o-3c0a65635a2ad68a5c43b89421316d27.html">весь список подобных работ</a></li>
+									</ul>
+									<ul class="link_block_ul">
+										<li class="clouse"><a href="https://otherreferats.allbest.ru/programming/c00023064.html">скачать работу можно здесь</a></li>
+									</ul>
+									<ul class="link_block_ul">
+										<li class="qu_link"><a href="https://multiwork.online/newland?from=link21">сколько стоит заказать работу?</a></li>
+									</ul>
+									<div class="text_baner">
+										<p>Работы в архивах красиво оформлены согласно требованиям ВУЗов и содержат рисунки, диаграммы, формулы и т.д.<br>PPT, PPTX и PDF-файлы представлены только в архивах.<br>Рекомендуем <a href="https://otherreferats.allbest.ru/programming/c00023064.html">скачать работу</a>.</p>
+									</div>
+								</div>
+							</div>
+							<div class="clear"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+<div class="baner_top" style="height: auto !important;">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-lg-12">
+					<script async="" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/adsbygoogle.js"></script>
+					<!-- adapt_top -->
+					<ins class="adsbygoogle" style="display: block; height: 280px;" data-ad-client="ca-pub-5303253934337511" data-ad-slot="2446721994" data-ad-format="auto" data-adsbygoogle-status="done"><ins id="aswift_0_expand" style="display:inline-table;border:none;height:280px;margin:0;padding:0;position:relative;visibility:visible;width:959px;background-color:transparent;"><ins id="aswift_0_anchor" style="display: block; border: medium none; height: 280px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 959px; background-color: transparent; overflow: visible;"><iframe id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;border:0;width:959px;height:280px;" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/ads.htm" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" data-google-container-id="a!1" data-google-query-id="CLrB29jGsO0CFQncsgodn18Bvg" data-load-complete="true" width="959" height="280" frameborder="0"></iframe></ins></ins></ins>
+					<script>
+					(adsbygoogle = window.adsbygoogle || []).push({});
+					</script>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="title-footer">
+		<div class="wr-footer">
+			<p>
+				© 2000 — 2020, ООО «Олбест»
+				Все права защищены
+			</p>
+		</div>
+	</div>
+
+	<!-- script -->
+	<script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/jquery-2.js"></script>
+	<script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/function.js"></script>
+	<script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/alert.js"></script>
+	<script src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/jquery.js"></script>
+	<!-- script -->
+	
+
+<ins class="adsbygoogle adsbygoogle-noablate" style="display: none !important;" data-adsbygoogle-status="done"><ins id="aswift_1_expand" style="display:inline-table;border:none;height:0px;margin:0;padding:0;position:relative;visibility:visible;width:0px;background-color:transparent;"><ins id="aswift_1_anchor" style="display:block;border:none;height:0px;margin:0;padding:0;position:relative;visibility:visible;width:0px;background-color:transparent;"><iframe id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;border:0;width:undefinedpx;height:undefinedpx;" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/ads_002.htm" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" data-google-container-id="a!1" data-load-complete="true" frameborder="0"></iframe></ins></ins></ins><div style="position: fixed; left: -99px;"><div id="52fadfb8e8"><iframe scrolling="no" allowtransparency="true" hidefocus="true" tabindex="-1" marginwidth="0" marginheight="0" style="opacity: 1;" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/render.htm" id="id1834" frameborder="no"></iframe></div></div><iframe id="google_osd_static_frame_4603926126202" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;"></iframe></body><iframe id="google_esf" name="google_esf" src="%D0%A1%D0%B5%D1%82%D0%B8%20%D0%B8%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D1%81%D1%82%D1%8C.%20%D0%A1%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5%20%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D0%BF%D0%BE%D1%82%D0%BE%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%8D%D1%85%D0%BE%20%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0_files/zrt_lookup.htm" style="display: none;" data-ad-client="ca-pub-5303253934337511"></iframe></html>

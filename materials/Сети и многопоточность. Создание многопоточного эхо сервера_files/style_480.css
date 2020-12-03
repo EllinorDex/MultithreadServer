@@ -1,0 +1,149 @@
+@media (max-width: 480px){
+	.info_block p:after
+	{
+		content: '480'
+	}
+	.slider_container{
+		display: none;
+	}
+	header .logo{
+		float: none;
+		width: 150px;
+		margin: auto;
+		margin-bottom: 0px;
+	}
+	header form{
+		width: 100%;
+	}
+	.why_over{
+		padding: 20px 15px;
+	}
+	ul.ul_why_over li{
+		min-height: 0;
+		margin-bottom: 15px;
+		padding: 0 10px !important;
+	}
+	ul.ul_why_over li:before{
+		position: relative;
+		margin: auto;
+		margin-bottom: 5px;
+		left: auto !important;
+		top: auto !important;
+	}
+	ul.ul_why_over li:nth-child(2n){
+		padding-right: 0;
+	}
+	.work_info_left{
+		float: none;
+		margin-bottom: 10px;
+	}
+	.author_work{
+		float: none;
+	}
+	.all_works{
+		text-align: center;
+	}
+	.all_works a.link_all{
+		float: none;
+		text-align: center;
+	}
+	a.download_link:before{
+		content: '';
+		width: 100%;
+		height: 0px;
+		float: none;
+		display: block;
+	}
+	a.download_link{
+		float: none;
+		margin: 0 5px;
+	}
+	.title_h1{
+		margin-bottom: 30px;
+	}
+	.left_alphedet{
+		float: none;
+		width: 100%;
+		margin-bottom: 10px;
+	}
+	.right_alphedet{
+		float: none;
+		width: 100%;
+	}
+	ul.alphabet_ul{
+		-webkit-column-count: 1;
+		-moz-column-count: 1;
+		column-count: 1;
+		-webkit-column-gap: 0;
+		-moz-column-gap: 0;
+		column-gap: 0;
+	}
+	ul.list_ul > li .block_list span{
+		clear: both;
+		float: none;
+		display: block;
+		padding-top: 10px;
+	}
+	.link_block_left{
+		float: none;
+		border: none;
+		width: 100%;
+		max-width: 202px;
+		margin: auto;
+		margin-bottom: 15px;
+		padding: 0;
+	}
+	.link_block_right{
+		float: none;
+		width: 100%;
+		text-align: center;
+	}
+	.block_line_input input{
+		float: none;
+		width: 100%;
+	}
+	.link_down div{
+		width: 100%;
+	}
+	.how_much{
+		width: 100%;
+	}
+
+	.form_window_left{
+		float: none;
+		width: 100%;
+		margin-bottom: 15px;
+	}
+	.form_window_right{
+		width: 100%;
+		float: none;
+	}
+	table.table_inner tbody tr td:first-child{
+		width: auto;
+	}
+
+	.calculator p{
+		width: 100%;
+		float: none;
+		margin-bottom: 10px;
+		text-align: center;
+	}
+	.calculator p span{
+		display: block;
+	}
+	.calculator form textarea{
+		width: 100%;
+		margin-bottom: 10px;
+	}
+	.div_cal{
+		width: 100%;
+		margin-bottom: 10px;
+	}
+	.button_cal{
+		width: 100%;
+		float: none;
+	}
+	.footer-new::before{
+		background-position: 30% 0px;
+	}
+}
