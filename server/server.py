@@ -1,50 +1,48 @@
 import socket
-from _thread import *
 import threading
 
-  
-print_lock = threading.Lock()
+
+def cryptFunc(data):
+
+    data = data[::-1]
+    return data
 
 
-def threaded(c):
+def threadFunc(conn):
 
     while True:
-
-        data = c.recv(1024)
+        data = conn.recv(1024)
 
         if not data:
-            print('Bye')
-            print_lock.release()
+            continue
+        data = data.decode()
+
+        if data == '--exit--':
             break
 
-        data = data[::-1]
-        c.send(data)
+        data = cryptFunc(data)
+        data = data.encode()
+        conn.send(data)
 
-    c.close()
+    conn.close()
 
 
-def Main():
-
-    host = ""
-    port = 12345
+def Main(arg_address, arg_port):
+    host = arg_address
+    port = arg_port
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
     print("socket binded to port", port)
-
-    s.listen(5)
-    print("socket is listening")
-
+    s.listen(10)
+	
     while True:
+        conn, addr = s.accept()
 
-        c, addr = s.accept()
-        print_lock.acquire()
         print('Connected to :', addr[0], ':', addr[1])
-        start_new_thread(threaded, (c,))
+        thread = threading.Thread(target = threadFunc, args = (conn,))
 
     s.close()
 
-
 if __name__ == '__main__':
-
-    Main() 
+    Main("", 12345)

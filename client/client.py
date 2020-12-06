@@ -1,31 +1,27 @@
 import socket
 
+def Main(arg_address, arg_port):
+    host = arg_address
+    port = arg_port
 
-def Main():
-
-    host = '127.0.0.1"
-    port = 12345
-    
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     s.connect((host,port))
 
-    message = "shaurya says geeksforgeeks"
+    message = "Hello, Im your friend."
+
 
     while True:
-
-        s.send(message.encode('ascii')
+        s.send(message.encode())
+        if message == '--exit--':
+            break
         data = s.recv(1024)
   
-        print('Received from the server :',str(data.decode('ascii')))
-        ans = input('\nDo you want to continue(y/n) :')
-
-        if ans == 'y':
-            continue
-        else:
-            break
+        print('Received from the server :\t'+ data.decode())
+        message = input()
+        print(message)
 
     s.close()
 
 if __name__ == '__main__':
 
-    Main() 
+    Main('127.0.0.1', 12345)
