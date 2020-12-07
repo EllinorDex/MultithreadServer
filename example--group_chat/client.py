@@ -4,7 +4,7 @@ import socket
 from threading import Thread
 import sys
 
-def listenServer():
+def listenServer(clientSocket):
     while True:
         message = clientSocket.recv(2048)
         if message.decode() == '--close':
@@ -17,7 +17,7 @@ def communication(host='127.0.0.1', port=9090):
     clientName = input("Your name:")
     clientSocket.send(clientName.encode())
 
-    listenThread = Thread(target=listenServer)
+    listenThread = Thread(target=listenServer,args=[clientSocket,])
     listenThread.start()
     while True:
         message = input()
